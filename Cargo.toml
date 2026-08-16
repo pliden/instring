@@ -1,0 +1,17 @@
+[package]
+name = "instring"
+version = "0.1.0"
+description = "Library for interning strings"
+authors = [ "Per Liden <per@malloc.se>" ]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/pliden/instring"
+repository = "https://github.com/pliden/instring"
+keywords = [ "intern", "string" ]
+include = [ "README.md", "CHANGELOG.md", "LICENSE-APACHE", "LICENSE-MIT", "src", "tests" ]
+
+[lib]
+
+[dependencies]
+dashmap = "6.2.1"
+itertools = "0.15.0"
