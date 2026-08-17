@@ -1,4 +1,4 @@
-# InString - Quick and easy string interning
+# InString - Simple and efficient string interning
 
 [![Crates.io](https://img.shields.io/crates/v/instring?logo=rust&label=Crates.io&labelColor=black)](https://crates.io/crates/instring)
 [![Docs.rs](https://img.shields.io/docsrs/instring?logo=rust&label=Docs.rs&labelColor=black)](https://docs.rs/instring/)
@@ -34,15 +34,6 @@ assert!(std::ptr::eq(interned0.as_str(), interned1.as_str()));
 
 ## License
 
-Licensed under either of
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT License](LICENSE-MIT) at your option.
 
- * [Apache License, Version 2.0](LICENSE-APACHE)
- * [MIT License](LICENSE-MIT)
-
-at your option.
-
-## Contribution
-
-Any contribution intentionally submitted for inclusion in the work by you,
-as defined in the Apache-2.0 license, shall be dual licensed as above, without
-any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

@@ -1,4 +1,4 @@
-//! InString - Quick and easy string interning
+//! InString - Simple and efficient string interning
 //!
 //! ## Examples
 //!
@@ -72,8 +72,8 @@ impl Intern for String {
 }
 
 /// Type representing an interned string. This type acts as a [`String`],
-/// but cloning an instance has the same cost as cloning an [`Arc`] and
-/// will thus not duplicate the string's backing storage on heap.
+/// but cloning an instance will not duplicate the string's backing storage
+/// on heap, but instead has the same cost as cloning an [`Arc`].
 #[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct InString(InStringInner);
 

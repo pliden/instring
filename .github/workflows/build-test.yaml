@@ -24,7 +24,7 @@ jobs:
     - run: cargo clippy --all-targets -- --deny warnings
     - run: cargo test --all-targets
     - run: cargo fmt --check --verbose
-    - run: cargo doc
+    - run: cargo doc --no-deps --all-features
 
   build-test-macos:
     name: Build & Test macOS
@@ -36,7 +36,7 @@ jobs:
     - run: cargo clippy --all-targets -- --deny warnings
     - run: cargo test --all-targets
     - run: cargo fmt --check --verbose
-    - run: cargo doc
+    - run: cargo doc --no-deps --all-features
 
   build-test-windows:
     name: Build & Test Windows
@@ -48,4 +48,4 @@ jobs:
     - run: cargo clippy --all-targets -- --deny warnings
     - run: cargo test --all-targets
     - run: cargo fmt --check --verbose
-    - run: cargo doc
+    - run: cargo doc --no-deps --all-features

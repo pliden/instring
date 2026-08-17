@@ -1,7 +1,7 @@
 [package]
 name = "instring"
 version = "0.1.0"
-description = "Library for interning strings"
+description = "Simple and efficient string interning"
 authors = [ "Per Liden <per@malloc.se>" ]
 edition = "2024"
 license = "MIT OR Apache-2.0"
