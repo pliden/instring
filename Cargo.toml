@@ -1,6 +1,6 @@
 [package]
 name = "instring"
-version = "0.1.0"
+version = "0.2.0"
 description = "Simple and efficient string interning"
 authors = [ "Per Liden <per@malloc.se>" ]
 edition = "2024"
