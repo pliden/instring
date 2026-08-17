@@ -12,6 +12,13 @@ include = [ "README.md", "CHANGELOG.md", "LICENSE-APACHE", "LICENSE-MIT", "src",
 
 [lib]
 
+[features]
+stats = []
+
 [dependencies]
 dashmap = "6.2.1"
 itertools = "0.15.0"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

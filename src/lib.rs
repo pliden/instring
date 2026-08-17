@@ -30,6 +30,7 @@
 
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 use dashmap::DashMap;
 use itertools::Itertools;
@@ -40,15 +41,15 @@ use std::fmt::Display;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::sync::LazyLock;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering;
 use std::vec::IntoIter;
 
+#[cfg(feature = "stats")]
+mod stats;
+
+#[cfg(feature = "stats")]
+pub use stats::InStringStats;
+
 static INTERNED: LazyLock<DashMap<InStringInner, ()>> = LazyLock::new(DashMap::default);
-static NUM_INTERNED_STRINGS: AtomicUsize = AtomicUsize::new(0);
-static NUM_INTERNED_BYTES: AtomicUsize = AtomicUsize::new(0);
-static NUM_DEDUPED_STRINGS: AtomicUsize = AtomicUsize::new(0);
-static NUM_DEDUPED_BYTES: AtomicUsize = AtomicUsize::new(0);
 
 /// Trait for interning a string.
 pub trait Intern {
@@ -84,8 +85,8 @@ impl InString {
             .iter()
             .map(|entry| {
                 let inner = entry.key();
-                let bytes = inner.0.len();
-                InStringStats::deduped_add(bytes);
+                #[cfg(feature = "stats")]
+                stats::deduped_add(inner.0.len());
                 InString(inner.clone())
             })
             .sorted()
@@ -93,8 +94,9 @@ impl InString {
 
     /// Returns statistics for currently interned string.
     /// Mostly useful for introspection and debugging.
+    #[cfg(feature = "stats")]
     pub fn stats() -> InStringStats {
-        InStringStats::collect()
+        stats::collect()
     }
 }
 
@@ -115,7 +117,6 @@ impl Deref for InString {
 
 impl From<Cow<'_, str>> for InString {
     fn from(string: Cow<'_, str>) -> Self {
-        let bytes = string.len();
         let mut interned = false;
 
         let inner = match INTERNED.get(string.as_ref()) {
@@ -128,9 +129,11 @@ impl From<Cow<'_, str>> for InString {
         };
 
         if interned {
-            InStringStats::interned_add(bytes);
+            #[cfg(feature = "stats")]
+            stats::interned_add(inner.0.len());
         } else {
-            InStringStats::deduped_add(bytes);
+            #[cfg(feature = "stats")]
+            stats::deduped_add(inner.0.len());
         }
 
         InString(inner)
@@ -174,15 +177,14 @@ impl PartialEq<&str> for InString {
 
 impl Clone for InString {
     fn clone(&self) -> Self {
-        let bytes = self.len();
-        InStringStats::deduped_add(bytes);
+        #[cfg(feature = "stats")]
+        stats::deduped_add(self.len());
         Self(self.0.clone())
     }
 }
 
 impl Drop for InString {
     fn drop(&mut self) {
-        let bytes = self.len();
         let inner = &self.0;
 
         // Unintern the string if the reference count is 2. I.e. one
@@ -199,9 +201,11 @@ impl Drop for InString {
 
         if uninterned {
             debug_assert!(self.0.ref_count() == 1);
-            InStringStats::interned_sub(bytes);
+            #[cfg(feature = "stats")]
+            stats::interned_sub(self.len());
         } else {
-            InStringStats::deduped_sub(bytes);
+            #[cfg(feature = "stats")]
+            stats::deduped_sub(self.len());
         }
     }
 }
@@ -228,53 +232,5 @@ impl InStringInner {
 impl Borrow<str> for InStringInner {
     fn borrow(&self) -> &str {
         &self.0
-    }
-}
-
-/// Interned string statistics.
-/// Mostly useful for introspection and debugging.
-#[derive(Copy, Clone, Debug)]
-pub struct InStringStats {
-    /// Number of interned strings.
-    pub interned_strings: usize,
-    /// Sum of the length of all currently interned strings.
-    pub interned_bytes: usize,
-    /// Number of deduplicated strings. I.e. current number of
-    /// [InString]s that shares its backing storage with another
-    /// [InString].
-    pub deduped_strings: usize,
-    /// Sum of the length of all deduplicated strings. I.e. number
-    /// of bytes saved on the heap because of string interning.
-    pub deduped_bytes: usize,
-}
-
-impl InStringStats {
-    fn collect() -> Self {
-        Self {
-            interned_strings: NUM_INTERNED_STRINGS.load(Ordering::Relaxed),
-            interned_bytes: NUM_INTERNED_BYTES.load(Ordering::Relaxed),
-            deduped_strings: NUM_DEDUPED_STRINGS.load(Ordering::Relaxed),
-            deduped_bytes: NUM_DEDUPED_BYTES.load(Ordering::Relaxed),
-        }
-    }
-
-    fn interned_add(bytes: usize) {
-        NUM_INTERNED_STRINGS.fetch_add(1, Ordering::Relaxed);
-        NUM_INTERNED_BYTES.fetch_add(bytes, Ordering::Relaxed);
-    }
-
-    fn interned_sub(bytes: usize) {
-        NUM_INTERNED_STRINGS.fetch_sub(1, Ordering::Relaxed);
-        NUM_INTERNED_BYTES.fetch_sub(bytes, Ordering::Relaxed);
-    }
-
-    fn deduped_add(bytes: usize) {
-        NUM_DEDUPED_STRINGS.fetch_add(1, Ordering::Relaxed);
-        NUM_DEDUPED_BYTES.fetch_add(bytes, Ordering::Relaxed);
-    }
-
-    fn deduped_sub(bytes: usize) {
-        NUM_DEDUPED_STRINGS.fetch_sub(1, Ordering::Relaxed);
-        NUM_DEDUPED_BYTES.fetch_sub(bytes, Ordering::Relaxed);
     }
 }
