@@ -71,16 +71,22 @@ impl Intern for String {
     }
 }
 
-/// Type representing an interned string. This type acts as a [`String`],
-/// but cloning an instance will not duplicate the string's backing storage
-/// on heap, but instead has the same cost as cloning an [`Arc`].
+/// Type representing an interned string.
+///
+/// This type acts as a [`String`], but cloning an instance will not duplicate the
+/// string's backing storage on heap, but instead create a new reference to the same
+/// backing storage. The cost of cloning is the same as cloning an [`Arc`].
+///
+/// An interned string will automatically be uninterned, and the string's backing
+/// storage on heap will be freed, when the last [`InString`] referencing the string
+/// is dropped.
 #[derive(Default, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct InString(InStringInner);
 
 impl InString {
-    /// Returns an iterator over currently interned string.
+    /// Returns an iterator over all currently interned string.
     /// Mostly useful for introspection and debugging.
-    pub fn all() -> IntoIter<InString> {
+    pub fn iter() -> IntoIter<InString> {
         INTERNED
             .iter()
             .map(|entry| {
@@ -92,7 +98,7 @@ impl InString {
             .sorted()
     }
 
-    /// Returns statistics for currently interned string.
+    /// Returns statistics for all currently interned string.
     /// Mostly useful for introspection and debugging.
     #[cfg(feature = "stats")]
     pub fn stats() -> InStringStats {

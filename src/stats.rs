@@ -17,7 +17,7 @@ pub struct InStringStats {
     pub interned_bytes: usize,
     /// Number of deduplicated strings. I.e. current number of
     /// [`InString`](super::InString)s that shares its backing
-    /// storage with another [`InString`](super::InString).
+    /// storage with one or more other [`InString`](super::InString)s.
     pub deduped_strings: usize,
     /// Sum of the length of all deduplicated strings. I.e. number
     /// of bytes saved on the heap because of string interning.
