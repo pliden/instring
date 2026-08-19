@@ -7,12 +7,12 @@
 //! ```rust
 //! use instring::Intern;
 //!
-//! let interned0 = "hello world".intern();
-//! let interned1 = String::from("hello world").intern();
+//! let a = "hello world".intern();
+//! let b = String::from("hello world").intern();
 //!
-//! assert!(interned0 == interned1);
-//! assert!(interned0.as_str() == interned1.as_str());
-//! assert!(std::ptr::eq(interned0.as_str(), interned1.as_str()));
+//! assert!(a == b);
+//! assert!(a.as_str() == b.as_str());
+//! assert!(std::ptr::eq(a.as_str(), b.as_str()));
 //! ```
 //!
 //! Using [`InString::from()`].
@@ -20,12 +20,12 @@
 //! ```rust
 //! use instring::InString;
 //!
-//! let interned0 = InString::from("hello world");
-//! let interned1 = InString::from(String::from("hello world"));
+//! let a = InString::from("hello world");
+//! let b = InString::from(String::from("hello world"));
 //!
-//! assert!(interned0 == interned1);
-//! assert!(interned0.as_str() == interned1.as_str());
-//! assert!(std::ptr::eq(interned0.as_str(), interned1.as_str()));
+//! assert!(a == b);
+//! assert!(a.as_str() == b.as_str());
+//! assert!(std::ptr::eq(a.as_str(), b.as_str()));
 //! ```
 
 #![warn(missing_docs)]
