@@ -181,6 +181,13 @@ impl PartialEq<&str> for InString {
     }
 }
 
+impl PartialEq<String> for InString {
+    #[inline]
+    fn eq(&self, other: &String) -> bool {
+        self.0.0.as_str() == other
+    }
+}
+
 impl Clone for InString {
     fn clone(&self) -> Self {
         #[cfg(feature = "stats")]
