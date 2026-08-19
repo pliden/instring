@@ -1,10 +1,16 @@
+## 1.0.0
+
+* Added `PartialEq<String>` for `InString`
+* Renamed `InString::iter()` to `InString::all()`.
+* Updated documentation.
+
 ## 0.2.1
 
-* Improved documentation.
+* Updated documentation.
 
 ## 0.2.0
 
-* Interned statistics now only available if "stats" feature is enabled.
+* Statistics now only available if `stats` feature is enabled.
 
 ## 0.1.0
 
