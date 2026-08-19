@@ -24,31 +24,33 @@ pub struct InStringStats {
     pub deduped_bytes: usize,
 }
 
-pub fn collect() -> InStringStats {
-    InStringStats {
-        interned_strings: NUM_INTERNED_STRINGS.load(Ordering::Relaxed),
-        interned_bytes: NUM_INTERNED_BYTES.load(Ordering::Relaxed),
-        deduped_strings: NUM_DEDUPED_STRINGS.load(Ordering::Relaxed),
-        deduped_bytes: NUM_DEDUPED_BYTES.load(Ordering::Relaxed),
+impl InStringStats {
+    pub(crate) fn collect() -> Self {
+        Self {
+            interned_strings: NUM_INTERNED_STRINGS.load(Ordering::Relaxed),
+            interned_bytes: NUM_INTERNED_BYTES.load(Ordering::Relaxed),
+            deduped_strings: NUM_DEDUPED_STRINGS.load(Ordering::Relaxed),
+            deduped_bytes: NUM_DEDUPED_BYTES.load(Ordering::Relaxed),
+        }
     }
-}
 
-pub fn interned_add(bytes: usize) {
-    NUM_INTERNED_STRINGS.fetch_add(1, Ordering::Relaxed);
-    NUM_INTERNED_BYTES.fetch_add(bytes, Ordering::Relaxed);
-}
+    pub(crate) fn interned_add(bytes: usize) {
+        NUM_INTERNED_STRINGS.fetch_add(1, Ordering::Relaxed);
+        NUM_INTERNED_BYTES.fetch_add(bytes, Ordering::Relaxed);
+    }
 
-pub fn interned_sub(bytes: usize) {
-    NUM_INTERNED_STRINGS.fetch_sub(1, Ordering::Relaxed);
-    NUM_INTERNED_BYTES.fetch_sub(bytes, Ordering::Relaxed);
-}
+    pub(crate) fn interned_sub(bytes: usize) {
+        NUM_INTERNED_STRINGS.fetch_sub(1, Ordering::Relaxed);
+        NUM_INTERNED_BYTES.fetch_sub(bytes, Ordering::Relaxed);
+    }
 
-pub fn deduped_add(bytes: usize) {
-    NUM_DEDUPED_STRINGS.fetch_add(1, Ordering::Relaxed);
-    NUM_DEDUPED_BYTES.fetch_add(bytes, Ordering::Relaxed);
-}
+    pub(crate) fn deduped_add(bytes: usize) {
+        NUM_DEDUPED_STRINGS.fetch_add(1, Ordering::Relaxed);
+        NUM_DEDUPED_BYTES.fetch_add(bytes, Ordering::Relaxed);
+    }
 
-pub fn deduped_sub(bytes: usize) {
-    NUM_DEDUPED_STRINGS.fetch_sub(1, Ordering::Relaxed);
-    NUM_DEDUPED_BYTES.fetch_sub(bytes, Ordering::Relaxed);
+    pub(crate) fn deduped_sub(bytes: usize) {
+        NUM_DEDUPED_STRINGS.fetch_sub(1, Ordering::Relaxed);
+        NUM_DEDUPED_BYTES.fetch_sub(bytes, Ordering::Relaxed);
+    }
 }

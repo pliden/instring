@@ -92,7 +92,7 @@ impl InString {
             .map(|entry| {
                 let inner = entry.key();
                 #[cfg(feature = "stats")]
-                stats::deduped_add(inner.0.len());
+                InStringStats::deduped_add(inner.0.len());
                 InString(inner.clone())
             })
             .sorted()
@@ -102,7 +102,7 @@ impl InString {
     /// Mostly useful for introspection and debugging.
     #[cfg(feature = "stats")]
     pub fn stats() -> InStringStats {
-        stats::collect()
+        InStringStats::collect()
     }
 }
 
@@ -136,10 +136,10 @@ impl From<Cow<'_, str>> for InString {
 
         if interned {
             #[cfg(feature = "stats")]
-            stats::interned_add(inner.0.len());
+            InStringStats::interned_add(inner.0.len());
         } else {
             #[cfg(feature = "stats")]
-            stats::deduped_add(inner.0.len());
+            InStringStats::deduped_add(inner.0.len());
         }
 
         InString(inner)
@@ -184,7 +184,7 @@ impl PartialEq<&str> for InString {
 impl Clone for InString {
     fn clone(&self) -> Self {
         #[cfg(feature = "stats")]
-        stats::deduped_add(self.len());
+        InStringStats::deduped_add(self.len());
         Self(self.0.clone())
     }
 }
@@ -208,10 +208,10 @@ impl Drop for InString {
         if uninterned {
             debug_assert!(self.0.ref_count() == 1);
             #[cfg(feature = "stats")]
-            stats::interned_sub(self.len());
+            InStringStats::interned_sub(self.len());
         } else {
             #[cfg(feature = "stats")]
-            stats::deduped_sub(self.len());
+            InStringStats::deduped_sub(self.len());
         }
     }
 }
