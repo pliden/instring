@@ -86,7 +86,7 @@ pub struct InString(InStringInner);
 impl InString {
     /// Returns an iterator over all currently interned string.
     /// Mostly useful for introspection and debugging.
-    pub fn iter() -> IntoIter<InString> {
+    pub fn all() -> IntoIter<InString> {
         INTERNED
             .iter()
             .map(|entry| {
