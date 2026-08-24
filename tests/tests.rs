@@ -130,6 +130,27 @@ fn all() {
     assert!(all.contains(&bar));
 }
 
+#[test]
+fn ref_count() {
+    let s = "SPECIAL";
+
+    let s0 = s.intern();
+    println!("{}", s0.ref_count());
+    assert!(s0.ref_count() == 1);
+
+    let s1 = s.intern();
+    assert!(s1.ref_count() == 2);
+
+    let s2 = s.intern();
+    assert!(s2.ref_count() == 3);
+
+    let s3 = s.intern();
+    assert!(s3.ref_count() == 4);
+
+    let s4 = s.intern();
+    assert!(s4.ref_count() == 5);
+}
+
 #[cfg(feature = "stats")]
 #[test]
 fn stats() {

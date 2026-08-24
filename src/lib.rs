@@ -98,6 +98,13 @@ impl InString {
             .sorted()
     }
 
+    /// Returns the number of active references to the backing string.
+    /// Mostly useful for introspection and debugging.
+    pub fn ref_count(&self) -> usize {
+        // Minus one to discount the reference held by the INTERNED table.
+        self.0.ref_count() - 1
+    }
+
     /// Returns statistics for all currently interned string.
     /// Mostly useful for introspection and debugging.
     #[cfg(feature = "stats")]
