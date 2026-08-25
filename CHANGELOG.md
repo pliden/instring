@@ -1,3 +1,8 @@
+## 1.1.0
+
+* Mimic most traits implemented by `String`.
+* Added `InString::ref_count()`.
+
 ## 1.0.0
 
 * Added `PartialEq<String>` for `InString`
