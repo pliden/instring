@@ -1,5 +1,11 @@
 use instring::InString;
 use instring::Intern;
+use std::borrow::Borrow;
+use std::borrow::Cow;
+use std::ffi::OsStr;
+use std::path::Path;
+use std::path::PathBuf;
+use std::str::FromStr;
 
 fn is_same(a: &InString, b: &InString) -> bool {
     std::ptr::eq(a.as_str(), b.as_str())
@@ -50,8 +56,114 @@ fn string_intern() {
 }
 
 #[test]
+fn as_ref_osstr() {
+    fn print(string: impl AsRef<OsStr>) {
+        println!("{:?}", string.as_ref());
+    }
+
+    let foo = "FOO".intern();
+    print(&foo);
+}
+
+#[test]
+fn as_ref_path() {
+    fn print(string: impl AsRef<Path>) {
+        println!("{:?}", string.as_ref());
+    }
+
+    let foo = "FOO".intern();
+    print(&foo);
+}
+
+#[test]
+fn as_ref_u8() {
+    fn print(string: impl AsRef<[u8]>) {
+        println!("{:?}", string.as_ref());
+    }
+
+    let foo = "FOO".intern();
+    print(&foo);
+}
+
+#[test]
+fn as_ref_str() {
+    fn print(string: impl AsRef<str>) {
+        println!("{:?}", string.as_ref());
+    }
+
+    let foo = "FOO".intern();
+    print(&foo);
+}
+
+#[test]
+fn borrow_str() {
+    fn print(string: impl Borrow<str>) {
+        println!("{:?}", string.borrow());
+    }
+
+    let foo = "FOO".intern();
+    print(foo);
+}
+
+#[test]
+fn deref_str() {
+    fn print(string: &str) {
+        println!("{:?}", string);
+    }
+
+    let foo = "FOO".intern();
+    print(&foo);
+}
+
+#[test]
+fn deref_string() {
+    fn print(string: &String) {
+        println!("{:?}", string);
+    }
+
+    let foo = "FOO".intern();
+    print(&foo);
+}
+
+#[test]
+fn from_cow() {
+    let foo = Cow::Borrowed("FOO");
+    let _ = InString::from(foo);
+
+    let foo = Cow::Owned(String::from("FOO"));
+    let _ = InString::from(foo);
+}
+
+#[test]
+fn from_instring() {
+    let foo = InString::from("FOO");
+    let _ = InString::from(&foo);
+}
+
+#[test]
+fn from_char() {
+    let foo = 'F';
+    let _ = InString::from(foo);
+}
+
+#[test]
+fn from_box_str() {
+    let s = String::from("FOO");
+    let foo: Box<str> = s.into();
+    let _ = InString::from(foo);
+}
+
+#[test]
+fn from_mut_str() {
+    let mut s = String::from("FOO");
+    let foo = s.as_mut_str();
+    let _ = InString::from(foo);
+}
+
+#[test]
 fn from_str() {
-    let foo = "FOO";
+    let s = String::from("FOO");
+    let foo = s.as_str();
     let _ = InString::from(foo);
 }
 
@@ -62,33 +174,38 @@ fn from_string() {
 }
 
 #[test]
-fn as_str() {
-    fn print_as_str(string: &str) {
-        println!("{}", string);
-    }
-
-    let foo = "FOO".intern();
-    print_as_str(&foo);
+fn from_ref_string() {
+    let foo = String::from("FOO");
+    let _ = InString::from(&foo);
 }
 
 #[test]
-fn as_string() {
-    fn print_as_string(string: &String) {
-        println!("{}", string);
-    }
-
-    let foo = "FOO".intern();
-    print_as_string(&foo);
+fn from_str_trait() {
+    let _ = InString::from_str("FOO").unwrap();
 }
 
 #[test]
-fn as_ref() {
-    fn print_as_ref(string: impl AsRef<str>) {
-        println!("{}", string.as_ref());
-    }
+fn sliece_index() {
+    let foo = String::from("FOO");
+    assert!(&foo[..] == "FOO");
+    assert!(&foo[0..2] == "FO");
+    assert!(&foo[1..3] == "OO");
+}
 
-    let foo = "FOO".intern();
-    print_as_ref(&foo);
+#[test]
+fn partial_eq_cow() {
+    let s = "FOO".intern();
+    let foo = Cow::Borrowed("FOO");
+    assert!(s == foo);
+}
+
+#[test]
+fn partial_eq_instring() {
+    let s = "FOO".intern();
+    let foo = InString::from("FOO");
+    let bar = InString::from("BAR");
+    assert!(s == foo);
+    assert!(s != bar);
 }
 
 #[test]
@@ -98,6 +215,8 @@ fn partial_eq_str() {
     let bar = "BAR";
     assert!(s == foo);
     assert!(s != bar);
+    assert!(s == *foo);
+    assert!(s != *bar);
 }
 
 #[test]
@@ -105,15 +224,28 @@ fn partial_eq_string() {
     let s = "FOO".intern();
     let foo = String::from("FOO");
     let bar = String::from("BAR");
+    let foo_ref = &foo;
+    let bar_ref = &bar;
     assert!(s == foo);
     assert!(s != bar);
+    assert!(s == foo_ref);
+    assert!(s != bar_ref);
 }
 
 #[test]
-fn partial_eq_instring() {
+fn partial_eq_path() {
     let s = "FOO".intern();
-    let foo = InString::from("FOO");
-    let bar = InString::from("BAR");
+    let foo = PathBuf::from("FOO");
+    let bar = PathBuf::from("BAR");
+    assert!(s == *foo.as_path());
+    assert!(s != *bar.as_path());
+}
+
+#[test]
+fn partial_eq_pathbuf() {
+    let s = "FOO".intern();
+    let foo = PathBuf::from("FOO");
+    let bar = PathBuf::from("BAR");
     assert!(s == foo);
     assert!(s != bar);
 }
@@ -132,7 +264,7 @@ fn all() {
 
 #[test]
 fn ref_count() {
-    let s = "SPECIAL";
+    let s = "UNIQUE";
 
     let s0 = s.intern();
     println!("{}", s0.ref_count());

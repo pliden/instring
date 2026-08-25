@@ -43,6 +43,8 @@ use std::sync::Arc;
 use std::sync::LazyLock;
 use std::vec::IntoIter;
 
+mod traits;
+
 #[cfg(feature = "stats")]
 mod stats;
 
@@ -113,21 +115,6 @@ impl InString {
     }
 }
 
-impl Borrow<str> for InString {
-    fn borrow(&self) -> &str {
-        self.0.borrow()
-    }
-}
-
-impl Deref for InString {
-    type Target = String;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        &self.0.0
-    }
-}
-
 impl From<Cow<'_, str>> for InString {
     fn from(string: Cow<'_, str>) -> Self {
         let mut interned = false;
@@ -153,6 +140,34 @@ impl From<Cow<'_, str>> for InString {
     }
 }
 
+impl From<&InString> for InString {
+    #[inline]
+    fn from(string: &InString) -> Self {
+        string.clone()
+    }
+}
+
+impl From<char> for InString {
+    #[inline]
+    fn from(string: char) -> Self {
+        Self::from(Cow::Owned(string.to_string()))
+    }
+}
+
+impl From<Box<str>> for InString {
+    #[inline]
+    fn from(string: Box<str>) -> Self {
+        Self::from(string.into_string())
+    }
+}
+
+impl From<&mut str> for InString {
+    #[inline]
+    fn from(string: &mut str) -> Self {
+        Self::from(Cow::Borrowed(string))
+    }
+}
+
 impl From<&str> for InString {
     #[inline]
     fn from(string: &str) -> Self {
@@ -167,31 +182,10 @@ impl From<String> for InString {
     }
 }
 
-impl AsRef<str> for InString {
+impl From<&String> for InString {
     #[inline]
-    fn as_ref(&self) -> &str {
-        self
-    }
-}
-
-impl PartialEq<str> for InString {
-    #[inline]
-    fn eq(&self, other: &str) -> bool {
-        self.0.0.as_str() == other
-    }
-}
-
-impl PartialEq<&str> for InString {
-    #[inline]
-    fn eq(&self, other: &&str) -> bool {
-        self.0.0.as_str() == *other
-    }
-}
-
-impl PartialEq<String> for InString {
-    #[inline]
-    fn eq(&self, other: &String) -> bool {
-        self.0.0.as_str() == other
+    fn from(string: &String) -> Self {
+        Self::from(Cow::Borrowed(string.as_str()))
     }
 }
 
@@ -232,7 +226,7 @@ impl Drop for InString {
 
 impl Display for InString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0.0)
+        write!(f, "{}", self.deref())
     }
 }
 
