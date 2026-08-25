@@ -102,9 +102,9 @@ impl InString {
 
     /// Returns the number of active references to the backing string.
     /// Mostly useful for introspection and debugging.
+    #[inline]
     pub fn ref_count(&self) -> usize {
-        // Minus one to discount the reference held by the INTERNED table.
-        self.0.ref_count() - 1
+        self.0.ref_count()
     }
 
     /// Returns statistics for all currently interned string.
@@ -201,20 +201,16 @@ impl Drop for InString {
     fn drop(&mut self) {
         let inner = &self.0;
 
-        // Unintern the string if the reference count is 2. I.e. one
-        // reference is owned by the caller of this function (and this
-        // reference is about to be dropped), and the only remaining
-        // reference will then be the one owned by INTERNED_STRINGS,
-        // in which case we want to remove it from INTERNED_STRINGS.
-        // This could be racing with other threads, so the ref_count
-        // needs to be re-checked while holding a lock on the entry.
-        let uninterned = inner.ref_count() == 2
+        // Unintern the string if its reference count is 1. This could
+        // be racing with other threads, so the reference count needs
+        // to be re-checked while holding a lock on the INTERNED entry.
+        let uninterned = inner.ref_count() == 1
             && INTERNED
-                .remove_if(self.as_str(), |inner, _| inner.ref_count() == 2)
+                .remove_if(inner, |inner, _| inner.ref_count() == 1)
                 .is_some();
 
         if uninterned {
-            debug_assert!(self.0.ref_count() == 1);
+            debug_assert!(inner.ref_count() == 0);
             #[cfg(feature = "stats")]
             InStringStats::interned_sub(self.len());
         } else {
@@ -234,16 +230,20 @@ impl Display for InString {
 struct InStringInner(Arc<String>);
 
 impl InStringInner {
+    #[inline]
     fn from(string: Cow<'_, str>) -> Self {
         Self(Arc::new(string.into_owned()))
     }
 
+    #[inline]
     fn ref_count(&self) -> usize {
-        Arc::strong_count(&self.0)
+        // Minus one to discount the reference held by INTERNED
+        Arc::strong_count(&self.0) - 1
     }
 }
 
 impl Borrow<str> for InStringInner {
+    #[inline]
     fn borrow(&self) -> &str {
         &self.0
     }
